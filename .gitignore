@@ -1,0 +1,10 @@
+.Rhistory
+.RData
+.Rproj.user/
+.DS_Store
+data/raw/*
+data/intermediate/*
+!data/raw/.gitkeep
+!data/intermediate/.gitkeep
+output/*
+!output/.gitkeep

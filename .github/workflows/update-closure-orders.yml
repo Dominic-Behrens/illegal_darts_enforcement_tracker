@@ -1,0 +1,49 @@
+name: Update NSW closure-order tracker
+
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: closure-order-tracker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AZURE_STORAGE_CONTAINER_SAS_URL: ${{ secrets.AZURE_STORAGE_CONTAINER_SAS_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::arrow
+            any::curl
+            any::digest
+            any::dplyr
+            any::jsonlite
+            any::pacman
+            any::purrr
+            any::readr
+            any::stringr
+            any::testthat
+            any::tibble
+            any::withr
+
+      - name: Run tests
+        run: Rscript tests/testthat.R
+
+      - name: Download and archive closure orders
+        run: Rscript R/01-update-closure-orders.R
