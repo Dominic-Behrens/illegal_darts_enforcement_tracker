@@ -7,8 +7,8 @@
   removal plus addition.
 - The seven descriptive register fields are required. The source CSV also
   publishes latitude and longitude; these remain nullable and are not geocoded.
-- `history` appends every accepted daily observation, including unchanged rows;
-  run-partitioned `snapshots` and `raw` files are immutable.
+- `history` appends every accepted scheduled observation, including unchanged
+  rows; run-partitioned `snapshots` and `raw` files are immutable.
 - A disappearance is `expired` only when observed after the published
   conclusion date. Otherwise it is `removed_early`.
 - Input validation happens before current/history writes. Rejected bytes and a

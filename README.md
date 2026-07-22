@@ -1,12 +1,12 @@
 # NSW tobacco closure-order tracker
 
-This project takes a daily snapshot of every row in the official NSW Health
+This project takes a weekly snapshot of every row in the official NSW Health
 [tobacco closure-order register](https://www.health.nsw.gov.au/tobacco/Pages/closure-register.aspx).
 The register excludes expired orders, so the tracker preserves observations
 from its first successful run onward; it does not reconstruct earlier history.
 
-The GitHub Action runs at 18:00 UTC each day (04:00 AEST or 05:00 AEDT the
-following calendar day in NSW) and can also be started manually. It downloads
+The GitHub Action runs each Sunday at 18:00 UTC (Monday at 04:00 AEST or 05:00
+AEDT in NSW) and can also be started manually. It downloads
 the [source CSV](https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv),
 archives its original bytes and response headers, obtains SharePoint file
 metadata, validates and normalises the data, and writes Parquet outputs to a
@@ -29,7 +29,7 @@ manifest/runs.parquet
 
 Run-scoped files are immutable because each run ID contains its UTC timestamp
 and source hash. `current` is the latest accepted snapshot. `history` contains
-every row from every accepted daily snapshot, including unchanged rows.
+every row from every accepted weekly snapshot, including unchanged rows.
 `manifest/runs.parquet` records source identifiers, headers, hashes, sizes, row
 and change counts, warnings, and completion or rejection status.
 
