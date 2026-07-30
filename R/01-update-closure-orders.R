@@ -39,7 +39,8 @@ required_source_fields <- c(
   "closure_order_type",
   "date_commenced",
   "conclusion_date",
-  "reason"
+  "reason",
+  "exemption_variation"
 )
 
 source_aliases <- c(
@@ -55,6 +56,7 @@ source_aliases <- c(
   "conclusion_of_closure_order" = "conclusion_date",
   "reason" = "reason",
   "reason_for_closure_order" = "reason",
+  "exemption_variation" = "exemption_variation",
   "latitude" = "latitude",
   "longitude" = "longitude"
 )
@@ -165,7 +167,8 @@ parse_closure_csv <- function(raw_bytes, snapshot_date, fetched_at, run_id) {
   )
 
   text_fields <- c(
-    "premise_name", "address", "council", "closure_order_type", "reason"
+    "premise_name", "address", "council", "closure_order_type", "reason",
+    "exemption_variation"
   )
   raw_table[text_fields] <- map(raw_table[text_fields], normalise_text)
 
@@ -206,6 +209,7 @@ parse_closure_csv <- function(raw_bytes, snapshot_date, fetched_at, run_id) {
       date_commenced = parse_register_date(date_commenced, "date_commenced"),
       conclusion_date = parse_register_date(conclusion_date, "conclusion_date"),
       reason,
+      exemption_variation,
       record_hash = hash_values(
         premise_name,
         address,
@@ -215,7 +219,8 @@ parse_closure_csv <- function(raw_bytes, snapshot_date, fetched_at, run_id) {
         closure_order_type,
         format(date_commenced),
         format(conclusion_date),
-        reason
+        reason,
+        exemption_variation
       ),
       snapshot_date = as.Date(snapshot_date),
       fetched_at = as.POSIXct(fetched_at, tz = "UTC"),
@@ -236,6 +241,7 @@ empty_snapshot <- function() {
     longitude = double(), closure_order_type = character(),
     date_commenced = as.Date(character()),
     conclusion_date = as.Date(character()), reason = character(),
+    exemption_variation = character(),
     record_hash = character(), snapshot_date = as.Date(character()),
     fetched_at = as.POSIXct(character(), tz = "UTC"), run_id = character()
   )

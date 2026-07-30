@@ -5,8 +5,11 @@
 - The source has no stable record ID. The ID hashes normalised premise name,
   address and commencement date. Key corrections can therefore appear as a
   removal plus addition.
-- The seven descriptive register fields are required. The source CSV also
+- The eight descriptive register fields are required. The source CSV also
   publishes latitude and longitude; these remain nullable and are not geocoded.
+- `exemption_variation` entered the source schema on 2026-07-30. It is tracked
+  in `record_hash`; the first accepted snapshot therefore marks all continuing
+  records as updated. Earlier history rows retain `NA`.
 - `history` appends every accepted scheduled observation, including unchanged
   rows; run-partitioned `snapshots` and `raw` files are immutable.
 - A disappearance is `expired` only when observed after the published

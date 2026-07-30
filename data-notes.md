@@ -7,9 +7,9 @@
 - The public register states that expired orders are excluded. Absence from a
   later snapshot does not by itself prove why an order disappeared.
 - The CSV currently publishes premise name, address, council, latitude,
-  longitude, closure order type, date commenced, conclusion and reason. It does
-  not publish a stable ID. Coordinates are retained as published and are not
-  geocoded or corrected by this project.
+  longitude, closure order type, date commenced, conclusion, reason and
+  exemption/variation. It does not publish a stable ID. Coordinates are retained
+  as published and are not geocoded or corrected by this project.
 - Three CSV headings are more verbose than the rendered register labels:
   `Short or long term closure order`, `Conclusion of closure order` and
   `Reason for closure order`. The parser maps both forms explicitly.
@@ -27,3 +27,6 @@
 - On 2026-07-21, the live-source smoke test strictly parsed all 168 published
   rows, found no duplicate generated IDs and received HTTP 200 from the
   SharePoint metadata endpoint.
+- On 2026-07-30, NSW Health added `Exemption/variation` to the CSV. All 159
+  published rows had a value: 155 `No` and 4 `Yes`. Snapshots before this date
+  have no value for this field.

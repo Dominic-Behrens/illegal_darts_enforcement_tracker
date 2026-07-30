@@ -7,6 +7,7 @@ test_that("local storage round-trips Parquet data", {
     council = "Council", latitude = NA_real_, longitude = NA_real_,
     closure_order_type = "Short", date_commenced = as.Date("2026-07-20"),
     conclusion_date = as.Date("2026-10-18"), reason = "Reason",
+    exemption_variation = "No",
     record_hash = "hash", snapshot_date = as.Date("2026-07-21"),
     fetched_at = as.POSIXct("2026-07-21", tz = "UTC"), run_id = "run"
   ))

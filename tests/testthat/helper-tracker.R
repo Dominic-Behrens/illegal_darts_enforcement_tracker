@@ -3,7 +3,7 @@ source(testthat::test_path("..", "..", "R", "01-update-closure-orders.R"))
 csv_bytes <- function(rows) {
   header <- paste(
     "Premises name,Address,Council,Closure Order Type,",
-    "Date Commenced,Conclusion,Reason",
+    "Date Commenced,Conclusion,Reason,Exemption/variation",
     sep = ""
   )
   charToRaw(paste(c(header, rows), collapse = "\n"))
@@ -28,7 +28,8 @@ order_row <- function(
     type = "Short",
     commenced = "20-Jul-26",
     conclusion = "18-Oct-26",
-    reason = "Sale of illicit tobacco") {
+    reason = "Sale of illicit tobacco",
+    exemption_variation = "No") {
   csv_quote <- function(x) paste0('"', gsub('"', '""', x, fixed = TRUE), '"')
   paste(
     csv_quote(name),
@@ -38,6 +39,7 @@ order_row <- function(
     csv_quote(commenced),
     csv_quote(conclusion),
     csv_quote(reason),
+    csv_quote(exemption_variation),
     sep = ","
   )
 }
