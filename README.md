@@ -17,9 +17,10 @@ private Azure Blob container.
 The static dashboard lives in `site/` and is published to GitHub Pages after
 each successful scheduled or manual update. Enable **Settings → Pages →
 Build and deployment → Source: GitHub Actions** in the repository once.
-Its public JSON extract is generated from accepted observations in the private
-Azure container; the SAS URL is used by the workflow only and is never sent
-to the browser. The deployment fails closed if the tracker or export fails.
+Its public JSON extract is rebuilt from immutable validated snapshot
+partitions in the private Azure container. The container SAS requires Read
+and List for export; the URL is used by Actions only and is never sent to
+the browser. Deployment fails closed if ingestion or export fails.
 
 The charts count orders listed at each weekly observation, not all enforcement
 actions or orders issued that week. An `added` change means first observed;
@@ -54,10 +55,13 @@ manifest/runs.parquet
 ```
 
 Run-scoped files are immutable because each run ID contains its UTC timestamp
-and source hash. `current` is the latest accepted snapshot. `history` contains
-every row from every accepted weekly snapshot, including unchanged rows.
-`manifest/runs.parquet` records source identifiers, headers, hashes, sizes, row
-and change counts, warnings, and completion or rejection status.
+and source hash. `current` is the latest accepted snapshot. `history` and
+`manifest/runs.parquet` are mutable operational tables. A faulty HEAD request
+previously caused them to be overwritten each week; they currently retain
+only the latest run. The public export therefore reads the immutable
+`snapshots/` partitions and re-derives changes instead of trusting these
+mutable tables. The old per-run `changes/` partitions likewise reflect the
+faulty baseline classification and are not used to calculate dashboard events.
 
 Changes are classified as:
 
@@ -90,6 +94,15 @@ hashes all published fields separately from observation metadata.
 
 Record the SAS expiry in the repository or organisation's credential-rotation
 system. Do not commit the SAS URL.
+
+As of 2026-09-28 the configured Actions SAS permits blob reads but Azure
+returns `AuthorizationPermissionMismatch` for container listing. Rotate the
+Actions secret to a **container-level SAS with List and Read** (and retain Add,
+Create and Write for the weekly update). Do not paste the SAS into an issue,
+log or chat. Then run **Actions → Export public dashboard history → Run
+workflow**, download its `dashboard-data` artifact and place `dashboard.json`
+in the ignored `site/data/` folder for local preview. The exporter requires
+the original 22 July Sydney snapshot and at least 11 dated observations.
 
 ## Run locally
 

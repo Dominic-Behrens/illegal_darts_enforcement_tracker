@@ -15,7 +15,8 @@ pacman::p_load(
   purrr,
   readr,
   stringr,
-  tibble
+  tibble,
+  xml2
 )
 
 csv_url <- paste0(
@@ -338,6 +339,10 @@ local_store <- function(root) {
       dir.create(dirname(target), recursive = TRUE, showWarnings = FALSE)
       writeBin(bytes, target)
       invisible(target)
+    },
+    list = function(prefix = "") {
+      paths <- list.files(root, recursive = TRUE, full.names = FALSE)
+      paths[startsWith(paths, prefix)]
     }
   )
 }
@@ -387,6 +392,36 @@ azure_store <- function(container_sas_url) {
         stop("Could not write Azure blob: ", path, call. = FALSE)
       }
       invisible(path)
+    },
+    list = function(prefix = "") {
+      paths <- character()
+      marker <- ""
+      repeat {
+        url <- paste0(
+          container_sas_url, "&restype=container&comp=list&prefix=",
+          curl_escape(prefix), "&maxresults=5000",
+          if (nzchar(marker)) paste0("&marker=", curl_escape(marker))
+        )
+        response <- curl_fetch_memory(url, handle = new_handle(
+          httpheader = "x-ms-version: 2023-11-03"
+        ))
+        if (response$status_code != 200L) {
+          stop(
+            "Could not list Azure blobs (HTTP ", response$status_code,
+            "). The container SAS needs List permission.",
+            call. = FALSE
+          )
+        }
+        listing <- xml2::read_xml(response$content)
+        paths <- c(paths, xml2::xml_text(
+          xml2::xml_find_all(listing, ".//Blobs/Blob/Name")
+        ))
+        marker <- xml2::xml_text(xml2::xml_find_first(
+          listing, ".//NextMarker"
+        ))
+        if (is.na(marker) || !nzchar(marker)) break
+      }
+      paths
     }
   )
 }

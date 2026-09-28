@@ -39,6 +39,7 @@ jobs:
             any::testthat
             any::tibble
             any::withr
+            any::xml2
 
       - name: Run tests
         run: Rscript tests/testthat.R
