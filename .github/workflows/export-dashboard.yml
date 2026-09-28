@@ -1,0 +1,43 @@
+name: Export public dashboard history
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::arrow
+            any::curl
+            any::digest
+            any::dplyr
+            any::jsonlite
+            any::pacman
+            any::purrr
+            any::readr
+            any::stringr
+            any::tibble
+
+      - name: Export accepted history without changing Azure
+        run: Rscript R/02-export-dashboard.R
+        env:
+          AZURE_STORAGE_CONTAINER_SAS_URL: ${{ secrets.AZURE_STORAGE_CONTAINER_SAS_URL }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-data
+          path: site/data/dashboard.json
+          if-no-files-found: error
