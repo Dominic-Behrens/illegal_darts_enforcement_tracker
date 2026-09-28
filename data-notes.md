@@ -38,3 +38,9 @@
   150, 148, 143 and 146. A 2026-09-28 live download had 146 rows.
   This sparse series is a local preview only; unobserved dates are unknown.
   Archive: <https://web.archive.org/web/*/https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv>.
+- GitHub Actions shows 11 successful tracker runs from 2026-07-21 UTC to
+  2026-09-27 UTC; the 2026-07-26 scheduled run failed. A 2026-09-28 export
+  from mutable `history` contained only 146 rows, all dated 2026-09-28.
+  The earlier immutable run partitions have not yet been enumerated because
+  the current container SAS returns `AuthorizationPermissionMismatch` on
+  List. Do not treat the mutable table or its saved changes as full history.
