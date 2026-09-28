@@ -353,6 +353,7 @@ azure_blob_url <- function(container_sas_url, path) {
 azure_store <- function(container_sas_url) {
   request <- function(path, method, bytes = NULL, content_type = NULL) {
     handle <- new_handle(
+      nobody = method == "HEAD",
       customrequest = method,
       httpheader = c(
         "x-ms-version: 2023-11-03",
@@ -366,8 +367,12 @@ azure_store <- function(container_sas_url) {
 
   list(
     exists = function(path) {
-      response <- tryCatch(request(path, "HEAD"), error = identity)
-      !inherits(response, "error") && response$status_code == 200L
+      response <- request(path, "HEAD")
+      if (response$status_code == 404L) return(FALSE)
+      if (response$status_code != 200L) {
+        stop("Could not check Azure blob: ", path, " (HTTP ", response$status_code, ")", call. = FALSE)
+      }
+      TRUE
     },
     read = function(path) {
       response <- request(path, "GET")

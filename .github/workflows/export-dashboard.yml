@@ -30,9 +30,9 @@ jobs:
             any::readr
             any::stringr
             any::tibble
-      - name: Check archive read access
+      - name: Check archive access
         run: |
-          Rscript -e 'source("R/01-update-closure-orders.R"); s <- azure_store(Sys.getenv("AZURE_STORAGE_CONTAINER_SAS_URL")); for (p in c("manifest/runs.parquet", "history/closure-orders.parquet", "current/closure-orders.parquet")) cat(p, "HEAD", s$exists(p), "GET bytes", tryCatch(length(s$read(p)), error = function(e) conditionMessage(e)), "\n"); u <- Sys.getenv("AZURE_STORAGE_CONTAINER_SAS_URL"); response <- curl::curl_fetch_memory(paste0(u, "&restype=container&comp=list")); cat("LIST status", response$status_code, "entries", lengths(regmatches(rawToChar(response$content), gregexpr("<Name>", rawToChar(response$content), fixed = TRUE))), "\n")'
+          Rscript -e 'source("R/01-update-closure-orders.R"); s <- azure_store(Sys.getenv("AZURE_STORAGE_CONTAINER_SAS_URL")); cat("Manifest HEAD", s$exists("manifest/runs.parquet"), "\n"); u <- Sys.getenv("AZURE_STORAGE_CONTAINER_SAS_URL"); response <- curl::curl_fetch_memory(paste0(u, "&restype=container&comp=list")); code <- regmatches(rawToChar(response$content), regexec("<Code>([^<]+)</Code>", rawToChar(response$content)))[[1]]; cat("LIST status", response$status_code, "error code", if (length(code) > 1L) code[[2]] else "none", "\n")'
         env:
           AZURE_STORAGE_CONTAINER_SAS_URL: ${{ secrets.AZURE_STORAGE_CONTAINER_SAS_URL }}
 
