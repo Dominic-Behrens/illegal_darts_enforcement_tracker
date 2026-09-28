@@ -12,6 +12,32 @@ archives its original bytes and response headers, obtains SharePoint file
 metadata, validates and normalises the data, and writes Parquet outputs to a
 private Azure Blob container.
 
+## Public dashboard
+
+The static dashboard lives in `site/` and is published to GitHub Pages after
+each successful scheduled or manual update. Enable **Settings → Pages →
+Build and deployment → Source: GitHub Actions** in the repository once.
+Its public JSON extract is generated from accepted observations in the private
+Azure container; the SAS URL is used by the workflow only and is never sent
+to the browser. The deployment fails closed if the tracker or export fails.
+
+The charts count orders listed at each weekly observation, not all enforcement
+actions or orders issued that week. An `added` change means first observed;
+the first observation is a baseline, not a week's new orders. The map uses
+coordinates as published by NSW Health and omits rows without coordinates.
+The register excludes expired orders; historical coverage begins only with
+the first successful tracker snapshot. Council labels are shown as published.
+
+For a local preview, `site/data/dashboard.json` can combine dated public
+[Internet Archive captures](https://web.archive.org/web/*/https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv)
+with a live NSW Health download. These are sparse, uneven observations: days
+between captures are unknown. The local file is ignored by Git and labelled
+separately from the production tracker export. The live CSV alone cannot
+reconstruct historical register counts. Serve `site/` with a static HTTP
+server (for example
+`python3 -m http.server 8765 --directory site`) and open
+`http://localhost:8765/`. A `file://` URL cannot fetch the JSON.
+
 ## Azure layout
 
 ```text

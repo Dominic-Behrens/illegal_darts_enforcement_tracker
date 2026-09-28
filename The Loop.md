@@ -16,3 +16,9 @@
   conclusion date. Otherwise it is `removed_early`.
 - Input validation happens before current/history writes. Rejected bytes and a
   rejected manifest row are retained for diagnosis.
+- The public dashboard deploys only after a completed tracker run. Its
+  generated JSON contains published register observations and accepted change
+  events, never Azure credentials. The first snapshot is a baseline, not
+  enforcement newly issued that week.
+- Local archive preview uses sparse Internet Archive captures plus a live CSV.
+  It does not backfill the tracker or infer events between capture dates.

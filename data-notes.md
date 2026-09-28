@@ -30,3 +30,11 @@
 - On 2026-07-30, NSW Health added `Exemption/variation` to the CSV. All 159
   published rows had a value: 155 `No` and 4 `Yes`. Snapshots before this date
   have no value for this field.
+- On 2026-09-28, the live source strictly parsed 146 published rows. The
+  local preview JSON is untracked and is not the production Pages data source.
+- The Internet Archive CDX index for the source CSV has 11 distinct capture
+  dates from 2026-08-21 to 2026-09-25. Each archived CSV strictly parsed:
+  observed row counts in date order were 154, 150, 147, 147, 147, 147, 144,
+  150, 148, 143 and 146. A 2026-09-28 live download had 146 rows.
+  This sparse series is a local preview only; unobserved dates are unknown.
+  Archive: <https://web.archive.org/web/*/https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv>.

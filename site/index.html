@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore published NSW tobacco closure orders by council, date and location.">
+  <title>NSW tobacco closure orders | Public register data</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./style.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <span class="site-name">Public register data <span class="site-region">/ New South Wales</span></span>
+      <a href="https://www.health.nsw.gov.au/tobacco/Pages/closure-register.aspx" target="_blank" rel="noopener noreferrer">View NSW Health register</a>
+    </div>
+  </header>
+  <main id="main" class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="overline">Tobacco enforcement · NSW</p>
+      <h1 id="page-title">Tobacco closure orders</h1>
+      <p class="lede">Explore the closure orders listed in NSW Health’s public register. Filter by council and inspect published locations and order dates.</p>
+      <div class="source-line"><span>Source: <a href="https://www.health.nsw.gov.au/tobacco/Pages/closure-register.aspx" target="_blank" rel="noopener noreferrer">NSW Health closure-order register</a></span><span id="updated-at"></span></div>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite">Loading register data…</div>
+    <div id="dashboard" hidden>
+      <aside id="preview-notice" class="preview-notice" aria-label="Live register preview" hidden>
+        <strong>Live register preview</strong>
+        <p>This view uses one current download of the published register. It does not show historical trends or when orders were first observed. Counts describe this download only.</p>
+      </aside>
+      <aside id="archive-notice" class="preview-notice archive-notice" aria-label="Archived register captures" hidden>
+        <strong>Sparse archived captures, not tracker history</strong>
+        <p>These counts come from available Internet Archive captures and today’s live CSV, not the tracker’s weekly snapshots. Only the shown dates were observed; missing dates are unknown. A change between captures does not establish when orders appeared or ended.</p>
+      </aside>
+
+      <section class="controls" aria-label="Filter register data">
+        <div class="control-group"><label for="council-select">Council</label><select id="council-select"><option value="">All councils</option></select></div>
+        <div class="control-group" id="snapshot-control"><label for="snapshot-select">Snapshot date</label><select id="snapshot-select"></select></div>
+        <p class="controls-note" id="selection-note"></p>
+        <p class="capture-source" id="capture-source" hidden>Source for selected date: <a id="capture-link" target="_blank" rel="noopener noreferrer"></a></p>
+      </section>
+
+      <section class="summary" aria-labelledby="summary-title">
+        <div class="section-heading"><div><h2 id="summary-title">At a glance</h2><p id="summary-context" class="section-description"></p></div></div>
+        <div class="metrics" id="metrics">
+          <div class="metric"><span class="metric-label">Orders listed</span><strong class="metric-value" id="active-count">—</strong><p>Rows in the selected register download<span id="active-scope"></span>.</p></div>
+          <div class="metric" id="first-observed-metric"><span class="metric-label">First observed</span><strong class="metric-value" id="new-count">—</strong><p>IDs first seen in this snapshot<span id="new-scope"></span>, excluding the initial baseline.</p></div>
+          <div class="metric" id="snapshot-metric"><span class="metric-label" id="snapshot-label">Snapshots retained</span><strong class="metric-value" id="snapshot-count">—</strong><p id="snapshot-explanation">Accepted downloads preserved since tracking began.</p></div>
+        </div>
+      </section>
+
+      <section id="trend-section" class="trend section-block" aria-labelledby="trend-title">
+        <div class="section-heading"><div><h2 id="trend-title">Over time</h2><p id="trend-description" class="section-description">Orders listed in each snapshot and IDs first observed after the initial baseline. Select a point to view that date.</p></div></div>
+        <div class="chart-legend" aria-hidden="true"><span><i class="legend-line"></i> Listed</span><span id="first-observed-legend"><i class="legend-bar"></i> First observed after baseline</span></div>
+        <div class="chart-wrap" id="chart-wrap"><svg id="trend-chart" role="img" aria-label="Snapshot counts and first-observed IDs"></svg></div>
+        <details class="data-details"><summary>View chart data as a table</summary><div class="table-scroll"><table><caption id="trend-caption">Snapshot counts for the selected council</caption><thead><tr><th scope="col">Snapshot</th><th scope="col">Listed</th><th id="first-observed-column" scope="col">First observed after baseline</th></tr></thead><tbody id="trend-rows"></tbody></table></div></details>
+      </section>
+
+      <section class="locations section-block" aria-labelledby="locations-title">
+        <div class="section-heading"><div><h2 id="locations-title">Locations</h2><p class="section-description" id="location-context">Map markers use published coordinates only.</p></div></div>
+        <div class="places-grid">
+          <div class="map-panel"><div id="map" role="region" aria-label="Map of orders in the selected data"></div><div id="map-fallback" class="map-fallback" hidden>Map unavailable. The searchable list remains available below.</div><p class="map-caption" id="map-caption"></p></div>
+          <div class="list-panel"><label for="location-search">Search locations</label><input id="location-search" type="search" placeholder="Premise, address or council" autocomplete="off"><p id="list-count" class="list-count" role="status" aria-live="polite"></p><ul id="location-list" class="location-list"></ul></div>
+        </div>
+      </section>
+
+      <section id="method" class="method section-block" aria-labelledby="method-title">
+        <div><h2 id="method-title">About this data</h2><p>This is an independent view of the <a href="https://www.health.nsw.gov.au/tobacco/Pages/closure-register.aspx" target="_blank" rel="noopener noreferrer">NSW Health tobacco closure-order register</a>, not an official NSW Health service.</p></div>
+        <div class="method-notes">
+          <div id="tracker-note"><h3>What the snapshots mean</h3><p>“First observed” means an ID appeared in this tracker for the first time, not that an order was issued that week. The first snapshot is a baseline and is excluded from these counts. Snapshots show what the register listed at the time, not a complete enforcement history.</p></div>
+          <div id="preview-note" hidden><h3>One download, not a history</h3><p>This preview contains only one download of the public register. It cannot establish when an order first appeared or how the register changed over time.</p></div>
+          <div id="archive-note" hidden><h3>Archived captures are sparse</h3><p>Capture dates identify when a copy of the register was available in the Internet Archive; the latest date is a live CSV download. Dates without captures are unknown, not zero. These observations cannot establish when orders first appeared or how many enforcement actions occurred between captures.</p></div>
+          <div><h3>Listed does not mean active today</h3><p>Counts describe rows in the selected download. The register omits expired orders; a disappearance alone cannot establish when or why an order ended. Published commencement and conclusion dates are order dates, not observation dates.</p></div>
+          <div><h3>Locations and records</h3><p>Map points use NSW Health’s published coordinates, without geocoding or correction. Some rows have no coordinates. The source has no stable record ID; changes to a premise, address or commencement date may appear as separate records in the tracker.</p></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="shell footer-inner"><span>Independent view of public data · NSW</span><a href="https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv" target="_blank" rel="noopener noreferrer">Download source CSV</a></div></footer>
+</body>
+</html>
