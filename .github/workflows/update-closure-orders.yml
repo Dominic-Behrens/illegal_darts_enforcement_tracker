@@ -49,33 +49,14 @@ jobs:
         env:
           AZURE_STORAGE_CONTAINER_SAS_URL: ${{ secrets.AZURE_STORAGE_CONTAINER_SAS_URL }}
 
-      - name: Export public dashboard data
-        run: Rscript R/02-export-dashboard.R
+      - name: Build flat CSV database and save to Azure
+        run: Rscript R/02-export-history.R
         env:
           AZURE_STORAGE_CONTAINER_SAS_URL: ${{ secrets.AZURE_STORAGE_CONTAINER_SAS_URL }}
 
-      - name: Upload public history extract
+      - name: Upload CSV database
         uses: actions/upload-artifact@v4
         with:
-          name: dashboard-data
-          path: site/data/dashboard.json
+          name: closure-orders-csv
+          path: output/02-export-history/closure-orders.csv
           if-no-files-found: error
-
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./site
-
-  deploy:
-    needs: update
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4

@@ -236,68 +236,6 @@ empty_snapshot <- function() {
   )
 }
 
-derive_changes <- function(current, previous_current, history, initial_snapshot) {
-  previous_current <- previous_current %||% empty_snapshot()
-  history <- history %||% empty_snapshot()
-
-  current_ids <- current$closure_order_id
-  previous_ids <- previous_current$closure_order_id
-  historical_ids <- unique(history$closure_order_id)
-
-  new_rows <- current %>%
-    filter(!closure_order_id %in% previous_ids) %>%
-    mutate(
-      change_type = if_else(
-        closure_order_id %in% historical_ids,
-        "reappeared",
-        "added"
-      ),
-      previous_record_hash = NA_character_,
-      current_record_hash = record_hash
-    )
-
-  updated_rows <- current %>%
-    inner_join(
-      previous_current %>%
-        select(closure_order_id, previous_record_hash = record_hash),
-      by = "closure_order_id"
-    ) %>%
-    filter(record_hash != previous_record_hash) %>%
-    mutate(
-      change_type = "updated",
-      current_record_hash = record_hash
-    )
-
-  removed_rows <- previous_current %>%
-    filter(!closure_order_id %in% current_ids) %>%
-    mutate(
-      snapshot_date = unique(current$snapshot_date),
-      fetched_at = unique(current$fetched_at),
-      run_id = unique(current$run_id),
-      change_type = if_else(
-        !is.na(conclusion_date) & snapshot_date > conclusion_date,
-        "expired",
-        "removed_early"
-      ),
-      previous_record_hash = record_hash,
-      current_record_hash = NA_character_
-    )
-
-  bind_rows(new_rows, updated_rows, removed_rows) %>%
-    mutate(
-      is_initial_snapshot = initial_snapshot,
-      detected_at = unique(current$fetched_at)
-    ) %>%
-    select(
-      change_type,
-      is_initial_snapshot,
-      detected_at,
-      previous_record_hash,
-      current_record_hash,
-      everything()
-    )
-}
-
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 raw_to_parquet <- function(table) {

@@ -8,4 +8,3 @@ data/intermediate/*
 !data/intermediate/.gitkeep
 output/*
 !output/.gitkeep
-site/data/*
