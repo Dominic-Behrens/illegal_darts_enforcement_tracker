@@ -98,7 +98,10 @@ On 2026-11-06, the rotated SAS successfully saved to Azure. A read-only
 export found 19 valid partitions over 18 dates, from 2026-07-21 to 2026-11-06.
 The earlier export failed because its hard-coded start date rejected the
 additional 21 July snapshot. The simplified exporter uses the available
-validated history without that fixed-date assumption.
+validated history without that fixed-date assumption. The simplified run
+passed all 41 tests, saved 126 orders and exported 2,647 observations across
+18 dates. Its later website deployment failed because GitHub Pages is not
+enabled. Enable Pages with GitHub Actions as the source to publish the dashboard.
 
 ## Run locally
 

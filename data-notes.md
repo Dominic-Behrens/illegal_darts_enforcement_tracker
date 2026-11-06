@@ -59,3 +59,11 @@
   2026-10-26, 2026-11-02 and 2026-11-06. The fixed minimum-date equality
   check rejected the additional 21 July snapshot; this was not evidence of
   missing history. Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42157549227>.
+
+- Simplified pipeline run 42158128605 on 2026-11-06 passed all 41 tests,
+  saved 126 orders to Azure, and exported 2,647 observations over 18 dates
+  (2026-07-21 to 2026-11-06). The downloaded dashboard-data artifact has no
+  duplicate snapshot-date/order-ID keys and 126 rows on the latest date.
+  Data ingestion/export succeeded; the later configure-pages step failed
+  with HTTP 404 because the repository has no configured Pages site.
+  Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42158128605>.
