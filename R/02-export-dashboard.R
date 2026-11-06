@@ -1,5 +1,5 @@
 # Exports the validated run-partitioned snapshots for the public dashboard.
-# Inputs: private Azure snapshots/ and changes/ blobs (container List and Read).
+# Inputs: private Azure snapshots/ blobs (container List and Read).
 # Output: site/data/dashboard.json for deployment to GitHub Pages.
 source("R/01-update-closure-orders.R", local = TRUE)
 
@@ -17,14 +17,10 @@ export_dashboard <- function(store, output_path = "site/data/dashboard.json") {
   required <- c(
     "snapshot_date", "run_id", "fetched_at", "closure_order_id",
     "premise_name", "address", "council", "latitude", "longitude",
-    "closure_order_type", "date_commenced", "conclusion_date"
+    "closure_order_type", "date_commenced", "conclusion_date", "record_hash"
   )
   runs <- lapply(snapshots, function(path) {
     partition <- sub("^snapshots/", "", dirname(path))
-    change_path <- paste0("changes/", partition, "/changes.parquet")
-    if (!change_path %in% paths) {
-      stop("Snapshot has no matching change partition: ", path, call. = FALSE)
-    }
     rows <- parquet_to_table(store$read(path))
     expected_date <- sub("^snapshot_date=([^/]+)/.*$", "\\1", partition)
     expected_run <- sub("^.*/run_id=", "", partition)
@@ -39,23 +35,13 @@ export_dashboard <- function(store, output_path = "site/data/dashboard.json") {
     tibble(
       snapshot_date = as.Date(expected_date),
       fetched_at = max(rows$fetched_at),
+      run_id = expected_run,
       rows = list(rows)
     )
   }) %>% bind_rows() %>%
-    arrange(snapshot_date, desc(fetched_at)) %>%
+    arrange(snapshot_date, desc(fetched_at), desc(run_id)) %>%
     distinct(snapshot_date, .keep_all = TRUE) %>%
     arrange(snapshot_date)
-
-  # The first accepted run was 21 July UTC (22 July in Sydney). The repo
-  # recorded 11 successful run dates through 27 September UTC. Do not publish
-  # a partial extract if older immutable snapshots cannot be listed.
-  if (min(runs$snapshot_date) != as.Date("2026-07-22") || nrow(runs) < 11L) {
-    stop("Immutable tracker history is incomplete; expected at least 11 ",
-         "observation dates starting 2026-07-22. Found ", nrow(runs),
-         " observation dates: ", paste(runs$snapshot_date, collapse = ", "),
-         ". Validated snapshot partitions: ", length(snapshots), ".",
-         call. = FALSE)
-  }
 
   history <- NULL
   previous <- NULL
@@ -91,6 +77,9 @@ export_dashboard <- function(store, output_path = "site/data/dashboard.json") {
     dataframe = "rows",
     na = "null"
   )
+  message("Exported ", nrow(runs), " observation dates (",
+          min(runs$snapshot_date), " to ", max(runs$snapshot_date),
+          "); ", nrow(observations), " order observations.")
   invisible(output_path)
 }
 

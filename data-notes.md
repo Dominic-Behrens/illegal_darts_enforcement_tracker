@@ -51,3 +51,11 @@
   11 observation dates starting 2026-07-22. Exact available/missing dates and
   whether the SAS targets the original container remain unverified. Pages
   deployment was skipped. Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42135297376>.
+
+- Read-only diagnostic run 42157549227 on 2026-11-06 enumerated and validated
+  19 snapshot partitions over 18 dates: 2026-07-21, 2026-07-22, 2026-07-30,
+  2026-08-03, 2026-08-10, 2026-08-17, 2026-08-24, 2026-08-31, 2026-09-07,
+  2026-09-14, 2026-09-21, 2026-09-28, 2026-10-05, 2026-10-12, 2026-10-19,
+  2026-10-26, 2026-11-02 and 2026-11-06. The fixed minimum-date equality
+  check rejected the additional 21 July snapshot; this was not evidence of
+  missing history. Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42157549227>.

@@ -9,14 +9,18 @@
   publishes latitude and longitude; these remain nullable and are not geocoded.
 - `exemption_variation` entered the source schema on 2026-07-30. It is tracked
   in `record_hash`; earlier snapshots retain `NA`.
-- Until 2026-09-28, Azure HEAD incorrectly waited for a body, returned false,
-  and caused mutable `history` and `manifest` to reset each run. Immutable
-  run-partitioned snapshots remain the recovery source. The corrected HEAD
-  now preserves history on later runs; prior rows need reconstruction.
+- Each scrape appends raw bytes, headers and one validated snapshot. Mutable
+  current/history/changes/manifest tables are no longer used or updated;
+  existing Azure files remain untouched.
+- Export keeps the latest whole snapshot per Sydney date, with descending run
+  ID as the tie-break for equal timestamps. It combines daily snapshots and
+  derives changes. Deduplication never collapses an order across dates.
+- Available validated snapshots define coverage. No hard-coded launch date or
+  minimum date count is required. The earliest retained date is a baseline.
 - A disappearance is `expired` only when observed after the published
   conclusion date. Otherwise it is `removed_early`.
-- Input validation happens before current/history writes. Rejected bytes and a
-  rejected manifest row are retained for diagnosis.
+- Input validation happens before a snapshot is saved. Rejected bytes and
+  response headers are retained for diagnosis.
 - The public dashboard rebuilds history and event classifications from
   immutable snapshots, never the corrupted mutable history/change tables.
   It deploys only after a complete export and never publishes Azure credentials.

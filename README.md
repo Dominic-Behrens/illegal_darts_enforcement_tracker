@@ -8,9 +8,8 @@ from its first successful run onward; it does not reconstruct earlier history.
 The GitHub Action runs each Sunday at 18:00 UTC (Monday at 04:00 AEST or 05:00
 AEDT in NSW) and can also be started manually. It downloads
 the [source CSV](https://www.health.nsw.gov.au/tobacco/register/closure-orders.csv),
-archives its original bytes and response headers, obtains SharePoint file
-metadata, validates and normalises the data, and writes Parquet outputs to a
-private Azure Blob container.
+archives its original bytes and response headers, validates and normalises the
+data, and appends a dated Parquet snapshot to a private Azure Blob container.
 
 ## Public dashboard
 
@@ -45,23 +44,23 @@ server (for example
 raw/snapshot_date=YYYY-MM-DD/run_id=.../
   closure-orders.csv
   closure-orders.headers.json
-  closure-orders.metadata.json
 snapshots/snapshot_date=YYYY-MM-DD/run_id=.../closure-orders.parquet
-changes/snapshot_date=YYYY-MM-DD/run_id=.../changes.parquet
 rejected/snapshot_date=YYYY-MM-DD/run_id=.../
-current/closure-orders.parquet
-history/closure-orders.parquet
-manifest/runs.parquet
 ```
 
-Run-scoped files are immutable because each run ID contains its UTC timestamp
-and source hash. `current` is the latest accepted snapshot. `history` and
-`manifest/runs.parquet` are mutable operational tables. A faulty HEAD request
-previously caused them to be overwritten each week; they currently retain
-only the latest run. The public export therefore reads the immutable
-`snapshots/` partitions and re-derives changes instead of trusting these
-mutable tables. The old per-run `changes/` partitions likewise reflect the
-faulty baseline classification and are not used to calculate dashboard events.
+Each scrape appends a run partition. No mutable current, history, changes or
+manifest tables are read or written. Existing legacy files are left in Azure.
+The raw archive is written first; only a validated snapshot is used by export.
+
+The dashboard reads the snapshot partitions, keeps the latest complete run per
+Sydney calendar date, and combines those daily observations. Each daily
+snapshot has one row per order ID. For equal fetch timestamps, run ID breaks
+ties in descending order. Selecting the whole daily snapshot means an order
+removed by a later scrape that day does not survive from an earlier scrape.
+Orders remain in history across dates, including when they disappear from the
+live register. Changes are derived between the retained daily snapshots.
+The earliest available date is the baseline. There is no fixed start-date or
+minimum-date-count check; an empty store or invalid snapshot still fails.
 
 Changes are classified as:
 
@@ -89,20 +88,17 @@ hashes all published fields separately from observation metadata.
 4. Commit and push this project to `main`. Scheduled Actions run only from the
    default branch.
 5. Open **Actions → Update NSW closure-order tracker → Run workflow**.
-6. Verify that the raw CSV bytes, snapshot and current row counts, initial
-   `added` count, history rows, changes, and completed manifest row agree.
+6. Check the logged saved row count, export date range and observation count.
+   The first date is a baseline; reruns on one date must not add duplicate rows.
 
 Record the SAS expiry in the repository or organisation's credential-rotation
 system. Do not commit the SAS URL.
 
-On 2026-11-06, a manual tracker run with the rotated Actions SAS passed
-its tests and saved the closure orders to Azure. Container listing and
-snapshot reads also succeeded. Dashboard export then failed its history
-check: at least 11 observation dates starting 2026-07-22 are required.
-The exact missing dates and whether the new SAS targets the original
-container remain unverified. Dashboard deployment was skipped.
-See [the retry run](https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42135297376).
-Do not relax the history check before checking the original snapshot partitions.
+On 2026-11-06, the rotated SAS successfully saved to Azure. A read-only
+export found 19 valid partitions over 18 dates, from 2026-07-21 to 2026-11-06.
+The earlier export failed because its hard-coded start date rejected the
+additional 21 July snapshot. The simplified exporter uses the available
+validated history without that fixed-date assumption.
 
 ## Run locally
 
@@ -127,6 +123,6 @@ ignored by Git.
 
 Empty data, malformed CSV, missing or unexpected schema fields, invalid dates
 or coordinates, missing key fields, and duplicate generated IDs reject the
-run. The response is archived under `rejected/`, the rejection is appended to
-the manifest, and current/history remain unchanged. Missing SharePoint metadata
-or a metadata byte-count discrepancy is recorded as a warning only.
+run. Rejected source bytes and response headers are archived under `rejected/`.
+Accepted snapshots are not changed. Export rejects invalid snapshots and
+publishes only after all available snapshot partitions pass validation.

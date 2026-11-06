@@ -18,26 +18,21 @@ test_that("local storage round-trips Parquet data", {
   expect_equal(restored, table)
 })
 
-test_that("invalid input cannot alter last-good current or history", {
+test_that("invalid input is archived and cannot change accepted snapshots", {
   root <- withr::local_tempdir()
   store <- local_store(root)
   run_local(root, order_row(), "2026-07-21 18:00:00", "good-run")
-  before_current <- digest(store$read("current/closure-orders.parquet"))
-  before_history <- digest(store$read("history/closure-orders.parquet"))
-
+  path <- store$list("snapshots/")[[1]]
+  before <- digest(store$read(path))
   expect_error(
-    run_tracker(
-      store,
-      fake_response(charToRaw("bad,data\n1,2")),
-      fetched_at = as.POSIXct("2026-07-22 18:00:00", tz = "UTC"),
-      run_id = "bad-run"
-    ),
+    run_tracker(store, fake_response(charToRaw("bad,data\n1,2")),
+                fetched_at = as.POSIXct("2026-07-22 18:00:00", tz = "UTC"),
+                run_id = "bad-run"),
     "missing required"
   )
-
-  expect_equal(digest(store$read("current/closure-orders.parquet")), before_current)
-  expect_equal(digest(store$read("history/closure-orders.parquet")), before_history)
-  expect_true(store$exists(paste0(
+  expect_equal(digest(store$read(path)), before)
+  expect_equal(length(store$list("snapshots/")), 1L)
+  expect_true(store$exists(
     "rejected/snapshot_date=2026-07-23/run_id=bad-run/closure-orders.csv"
-  )))
+  ))
 })
