@@ -67,3 +67,11 @@
   Data ingestion/export succeeded; the later configure-pages step failed
   with HTTP 404 because the repository has no configured Pages site.
   Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42158128605>.
+
+- Database-only run 42159784038 on 2026-11-06 succeeded end to end: 41 tests
+  passed, 126 current orders were archived, and Azure `closure-orders.csv`
+  was written. The downloaded CSV contains 2,647 rows, 18 dates from
+  2026-07-21 to 2026-11-06, and no duplicate date/order-ID keys. It retains
+  reason, exemption/variation and observation metadata. Latest-date count is
+  126. The same file is available as the `closure-orders-csv` Actions artifact.
+  Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42159784038>.
