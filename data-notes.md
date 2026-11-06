@@ -42,5 +42,12 @@
   2026-09-27 UTC; the 2026-07-26 scheduled run failed. A 2026-09-28 export
   from mutable `history` contained only 146 rows, all dated 2026-09-28.
   The earlier immutable run partitions have not yet been enumerated because
-  the current container SAS returns `AuthorizationPermissionMismatch` on
+  the SAS then in use returned `AuthorizationPermissionMismatch` on
   List. Do not treat the mutable table or its saved changes as full history.
+
+- On 2026-11-06, retry run 42135297376 passed tests and completed the Azure
+  ingestion writes with the rotated Actions SAS. Dashboard export listed and
+  read the available snapshot partitions, then failed the check for at least
+  11 observation dates starting 2026-07-22. Exact available/missing dates and
+  whether the SAS targets the original container remain unverified. Pages
+  deployment was skipped. Run: <https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42135297376>.

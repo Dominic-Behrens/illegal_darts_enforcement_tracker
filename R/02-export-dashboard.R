@@ -51,7 +51,10 @@ export_dashboard <- function(store, output_path = "site/data/dashboard.json") {
   # a partial extract if older immutable snapshots cannot be listed.
   if (min(runs$snapshot_date) != as.Date("2026-07-22") || nrow(runs) < 11L) {
     stop("Immutable tracker history is incomplete; expected at least 11 ",
-         "observation dates starting 2026-07-22.", call. = FALSE)
+         "observation dates starting 2026-07-22. Found ", nrow(runs),
+         " observation dates: ", paste(runs$snapshot_date, collapse = ", "),
+         ". Validated snapshot partitions: ", length(snapshots), ".",
+         call. = FALSE)
   }
 
   history <- NULL

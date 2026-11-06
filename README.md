@@ -95,14 +95,14 @@ hashes all published fields separately from observation metadata.
 Record the SAS expiry in the repository or organisation's credential-rotation
 system. Do not commit the SAS URL.
 
-As of 2026-09-28 the configured Actions SAS permits blob reads but Azure
-returns `AuthorizationPermissionMismatch` for container listing. Rotate the
-Actions secret to a **container-level SAS with List and Read** (and retain Add,
-Create and Write for the weekly update). Do not paste the SAS into an issue,
-log or chat. Then run **Actions → Export public dashboard history → Run
-workflow**, download its `dashboard-data` artifact and place `dashboard.json`
-in the ignored `site/data/` folder for local preview. The exporter requires
-the original 22 July Sydney snapshot and at least 11 dated observations.
+On 2026-11-06, a manual tracker run with the rotated Actions SAS passed
+its tests and saved the closure orders to Azure. Container listing and
+snapshot reads also succeeded. Dashboard export then failed its history
+check: at least 11 observation dates starting 2026-07-22 are required.
+The exact missing dates and whether the new SAS targets the original
+container remain unverified. Dashboard deployment was skipped.
+See [the retry run](https://github.com/Dominic-Behrens/illegal_darts_enforcement_tracker/actions/runs/42135297376).
+Do not relax the history check before checking the original snapshot partitions.
 
 ## Run locally
 
